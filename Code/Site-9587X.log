@@ -1,0 +1,85 @@
+Logging to file /ericsson/log/amos/moshell_logfiles/admin/logs_mobatch/YYYY-MM-DD/propagation/Site-9587X.log
+                        __  __  ____   _____
+                  /\   |  \/  |/ __ \ / ____|
+                 /  \  | \  / | |  | | (___  
+                / /\ \ | |\/| | |  | |\___ \ 
+               / ____ \| |  | | |__| |____) |
+              /_/    \_\_|  |_|\____/|_____/
+              OSS Framework for MoShell-20.0c 
+  Copyright (c) Ericsson AB 2001-2022 - All Rights Reserved
+              
+           
+[1;31mWARNING: [0mthe AMOS version currently running is more than 23 weeks old.
+It is recommended to always use the latest released moshell version.
+To obtain the latest released version contact your local Ericsson support.
+
+$amosrb_pid = 650
+
+Checking ip contact...OK
+
+HELP MENU            : h
+BASIC MO COMMANDS    : m
+OTHER MO COMMANDS    : n
+OTHER COMMANDS       : o
+PM COMMANDS          : p
+QUIT                 : q
+
+Site-9587X> lt all
+
+210706-23:16:28 ip.add.re.ss 20.0c  stopfile=/tmp/32264
+Checking MOM version...RBS_NODE_MODEL_U_4_1234
+Parsing MOM (cached): /var/tmp/20210706-231625_32141/RBS_NODE_MODEL_U_4_1234.xml.cache.gz .....................................................................Done.
+Using paramfile /opt/ericsson/amos/moshell/commonjars/pm/PARAM_RBS_U_4_1234.txt
+Parsing file /opt/ericsson/amos/moshell/commonjars/pm/PARAM_RBS_U_4_1234.txt ...................................................................................................Done.
+Fetching IOR file...Done.
+Connecting to ip.add.re.ss:56834 (CorbaSecurity=OFF, corba_class=2, java=1.8.0_221, jacoms=R101E06, jacorb=R100A02)
+**** Welcome to the Simple Mo Browser (version 3.0)!
+Trying file=/var/tmp/20210706-231625_32141/ior32141
+**** Test Construction OK
+****
+
+$mobrowser_pid = 1288
+
+Connected to ip.add.re.ss (SubNetwork=ONRM_ROOT_MO_R6,SubNetwork=RNCRNCE12,MeContext=Site-9587X,ManagedElement=1)
+Connected to ip.add.re.ss (SubNetwork=ONRM_ROOT_MO_R6,SubNetwork=RNCRNCE12,MeContext=Site-9587X,ManagedElement=1)
+Last MO:  2379. Loaded 2379 MOs. Total:  2380 MOs.
+
+Site-9587X> rbs
+Trying password from script file: /var/tmp/20210706-231625_32141/monodeCmd32264...
+
+210706-23:16:34 ip.add.re.ss 20.0c RBS_NODE_MODEL_U_4_1234 stopfile=/tmp/32264
+$ rbs
+rbs: command not found
+$ 
+
+Site-9587X> pmxz . prop
+
+210706-23:16:35 ip.add.re.ss 20.0c RBS_NODE_MODEL_U_4_1234 stopfile=/tmp/32264
+............
+get /c/pm_data/A20210706.1800-1815:1.xml.gz /ericsson/log/amos/moshell_logfiles/admin/logs_moshell/pmfiles/ip.add.re.ss/pm_data/A20220706.1800-1815.1.xml.gz ... OK
+get /c/pm_data/A20210706.1815-1830:1.xml.gz /ericsson/log/amos/moshell_logfiles/admin/logs_moshell/pmfiles/ip.add.re.ss/pm_data/A20220706.1815-1830.1.xml.gz ... OK
+
+gzip -dc /ericsson/log/amos/moshell_logfiles/admin/logs_moshell/pmfiles/ip.add.re.ss/pm_data/A20210706.1815-1830.1.xml.gz | /usr/bin/perl /opt/ericsson/amos/moshell/pmExtract  "." "prop"   | /usr/bin/perl /opt/ericsson/amos/moshell/pmXtab -q  -cols time -fmt txt -m "(?:\w+=1,){1,2}((\w+=[^,]+,*)+$)"  
+
+Report from YYYY-MM-DD 18:15 UTC to YYYY-MM-DD 18:29 UTC (1 ropfiles)
+Node SW: CXP9023291/14_R2JA03 (W18Q4)
+
+Date: YYYY-MM-DD
+Object                       Counter             22:45
+Sector=1,Carrier=XA1,Prach=1 pmPropagationDelay 464,2246,548,0,194,1874,701,3843,3707,4054,129,165,438,903,20,51,6,22,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=1,Carrier=XA2,Prach=1 pmPropagationDelay 464,4342,1745,1,848,1676,988,4204,5996,5792,119,641,429,2232,21,76,5,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=2,Carrier=XB1,Prach=1 pmPropagationDelay 464,4204,5292,254,304,376,455,182,217,334,385,371,0,0,0,0,0,75,1488,31,62,1,0,0,0,0,0,0,0,0,0,1,667,0,0,0,0,0,0,0,0
+Sector=2,Carrier=XB2,Prach=1 pmPropagationDelay 464,5382,6970,324,80,250,394,132,23,779,1264,38,0,0,0,0,0,211,514,577,163,0,0,0,0,0,0,0,0,0,0,1,364,0,0,0,0,0,0,0,0
+Sector=3,Carrier=XC1,Prach=1 pmPropagationDelay 464,1248,2097,1987,1350,34,148,445,2143,1555,723,117,0,875,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=3,Carrier=XC2,Prach=1 pmPropagationDelay 464,2740,5866,2366,1287,103,2,11,114,186,30,158,0,52,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=4,Carrier=XA0,Prach=1 pmPropagationDelay 464,6634,2215,234,96,4699,1162,3807,4360,1749,1,3,89,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=4,Carrier=XA4,Prach=1 pmPropagationDelay 464,4005,1525,311,237,3888,1696,2812,2481,1152,9,38,123,2,1,0,3,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=5,Carrier=XB0,Prach=1 pmPropagationDelay 464,5979,5064,454,78,449,1316,1804,398,1271,868,283,0,1,0,0,0,207,2074,158,148,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1,0,0
+Sector=5,Carrier=XB4,Prach=1 pmPropagationDelay 464,4549,4026,346,42,68,396,286,206,392,698,103,0,0,0,1,0,235,899,21,145,0,0,0,0,0,0,0,0,0,0,4,427,0,0,0,0,0,0,0,0
+Sector=6,Carrier=XC0,Prach=1 pmPropagationDelay 464,9847,5047,943,247,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Sector=6,Carrier=XC4,Prach=1 pmPropagationDelay 464,6656,4139,180,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+
+Site-9587X> q!!
+Bye...
+Output has been logged to file /ericsson/log/amos/moshell_logfiles/admin/logs_mobatch/YYYY-MM-DD/prop.txt/23-15/Site-9587X.log
