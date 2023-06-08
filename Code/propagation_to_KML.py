@@ -1,6 +1,6 @@
 # function propagation
 
-def propagation_to_KML(location, propagation,
+def propagation_to_KML_chunks(location, propagation,
                        destination_path=None,
                        lat=53.408426,
                        long=29.472164,
@@ -10,18 +10,25 @@ def propagation_to_KML(location, propagation,
                        pie_chunks=6,
                        offset=0,
                        span=120,
-                        alpha = 100
+                       alpha=100,
+                       acceptable_max_min_percentage=None,
+                       acceptable_max_min_absolute=None,
+                              chunk_name_part=None
                        ):
     import numpy as np
     import os
     import math
     from scipy.interpolate import interp1d
 
-    distance_map = [0.4, 0.7, 1.1, 1.5, 1.8, 2.2, 2.5, 2.9, 3.3, 3.6, 4.4, 5.1, 5.8, 6.5, 7.3, 8.0, 8.7, 9.4, 10.2,
+    # check boundaries of accepted values to be shown in output KML shapes
+    if (not acceptable_max_min_percentage) and (not acceptable_max_min_absolute):
+        pass # in this case program should throw an error
+
+    distance_map_standard = [0.4, 0.7, 1.1, 1.5, 1.8, 2.2, 2.5, 2.9, 3.3, 3.6, 4.4, 5.1, 5.8, 6.5, 7.3, 8.0, 8.7, 9.4, 10.2,
                     10.9, 12.0, 13.1, 14.1, 15.2, 16.3, 17.4, 18.5, 19.6, 20.7, 21.8, 23.2, 24.7, 26.1, 27.6, 29.0,
                     30.5, 31.9, 33.4, 34.8, 36.3]
     # Compensating 36.3 KM that was shown as 33.682
-    distance_map = [i * 1.154 for i in distance_map]
+    distance_map = [i * 1.154 for i in distance_map_standard]
 
     b_interpolate = True
     interpolation_factor = 1
@@ -68,13 +75,16 @@ def propagation_to_KML(location, propagation,
         return [lat2 * 180 / math.pi, lon2 * 180 / math.pi]
 
     def color(percent, alpha=alpha):
-        # heat_map=[['0',c0c0c0],[5,b0000],[10,FF0000],[20,ffaa00],[30,ffff3a],[40,3ada79],[50,006e3c]]
+        # Color_Legend based on propagation list percentage
         X = [0, 30, 45, 70, 80, 90, 100]
         Y = [0xc0c0c0, 0xb0000, 0xFF0000, 0xffaa00, 0xffff3a, 0x3ada79, 0x006e3c]
         my_interp = interp1d(X, Y, kind='zero')
         Y2 = my_interp(round(percent))
-        print(str(percent) + "\t" + hex(int(alpha)).replace("0x", "").zfill(2) +str(hex(int(my_interp(percent).item(0)))).replace("0x", "").zfill(6))
-        return hex(int(alpha)).replace("0x", "").zfill(2) +str(hex(int(my_interp(percent).item(0)))).replace("0x", "").zfill(6)
+        print(str(percent) + "\t" + hex(int(alpha)).replace("0x", "").zfill(2) + str(
+            hex(int(my_interp(percent).item(0)))).replace("0x", "").zfill(6))
+        return hex(int(alpha)).replace("0x", "").zfill(2) + str(hex(int(my_interp(percent).item(0)))).replace("0x",
+                                                                                                              "").zfill(
+            6)
 
         # red = 255
         # green = 255
@@ -123,12 +133,46 @@ def propagation_to_KML(location, propagation,
         # polygon_inner.append([[lat], [long]])
         return polygon_inner
 
-    with open(destination, 'w') as kml_file:
+    propagation_in_percent = [round(i / max(propagation), 2) for i in propagation]
+
+    if destination_path:
+        destination = (destination_path + "\\" + location).replace("\\\\", "\\")
+    else:
+        destination = location
+
+    # Adding points for each chape
+    with open(destination, 'a') as kml_file:
+
+        kml_file.write(
+            "<Style id=\"normalPlacemark\"><IconStyle><color>ffbe6400</color><scale>0.5</scale><Icon><href>http://kml-icons.actix.com/Dot.png</href></Icon></IconStyle></Style>")
+        kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name><description>")
+        kml_file.write("<table border=\"1\"><tr><td>Distance</td><td>propagation</td><td>percent of prop</td></tr>")
+
+        # creates description
+        for d,i, j in zip(distance_map_standard,propagation, propagation_in_percent):
+            kml_file.write(f"<tr bgcolor=\"#{color(j*100)[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
+        kml_file.write("</table>")
+        kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
+        kml_file.write("<Point>")
+        kml_file.write(f"<coordinates> {lat},{long} </coordinates>")
+        kml_file.write("</Point>")
+        kml_file.write("</Placemark>")
+
+    with open(destination, 'a') as kml_file:
         descript = ""
-        kml_file.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">")
-        kml_file.write("<Document>")
+        # kml_file.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">")
+        # kml_file.write("<Document>")
 
         for TTL in range(0, len(propagation) - 1):
+            # filter output shapes based on acceptable_max_min_percentage & acceptable_max_min_absolute
+            if acceptable_max_min_percentage != None:
+                if (propagation_percent[TTL]  < acceptable_max_min_percentage[0]) or\
+                        (propagation_percent[TTL]  > acceptable_max_min_percentage[1]): continue
+            if acceptable_max_min_absolute != None:
+                if (propagation_percent[TTL]  < acceptable_max_min_absolute[0]) or\
+                        (propagation_percent[TTL]  > acceptable_max_min_absolute[1]): continue
+
+            # starts creating shapes
             kml_file.write("<Placemark>")
             kml_file.write("<Style> ")
             kml_file.write("\t<LineStyle>")
@@ -141,7 +185,7 @@ def propagation_to_KML(location, propagation,
             kml_file.write(f"\t\t<fill> {1} </fill>\n\t</PolyStyle>")
             kml_file.write("</Style>")
 
-            kml_file.write(f"\t<name> {location} </name> \n<description><![CDATA[")
+            kml_file.write(f"\t<name> {location}_{chunk_name_part} </name> \n<description><![CDATA[")
             kml_file.write(descript)
             kml_file.write("]]></description>")
             kml_file.write("<Polygon>")
@@ -153,12 +197,17 @@ def propagation_to_KML(location, propagation,
             tmp = kml_shape_create(lat, long, azimuth, diameter=distance_map[TTL + 1], pie_chunks=pie_chunks, span=span)
 
             # kml_file.write(str(tmp).replace("]], [[",            #            "," + str(offset + scale * tower_hieght * abs(propagation_percent[TTL])) + "\n").replace("], [",            #                                                       ",").replace(            #   "[[[", "").replace("]]]", "," + str(offset + scale * tower_hieght * abs(propagation_percent[TTL]))))
-            kml_file.write(str(tmp).replace("], [",                                            "," + str(                                                offset + scale * tower_hieght * abs(                                                    propagation_percent[TTL])) + "\n").replace(                "], [",                ",").replace(                "[[", "").replace("]]",                                  "," + str(offset + scale * tower_hieght * abs(propagation_percent[TTL]))).replace(                ", ",                ","            ) + "\n\n")
+            kml_file.write(str(tmp).replace("], [", "," + str(
+                offset + scale * tower_hieght * abs(propagation_percent[TTL])) + "\n").replace("], [", ",").replace(
+                "[[", "").replace("]]",
+                                  "," + str(offset + scale * tower_hieght * abs(propagation_percent[TTL]))).replace(
+                ", ", ",") + "\n\n")
 
             # print("</coordinates>\n\t\t</LinearRing>\n\t\t</outerBoundaryIs>")
 
-            if TTL * 330 != 0:
+            if TTL != 0:
                 # print("\t\t<innerBoundaryIs>\n\t\t<LinearRing>\n\t\t<coordinates>")
+
                 tmp = kml_shape_create(lat, long, azimuth, diameter=distance_map[TTL], pie_chunks=pie_chunks, span=span,
                                        reverse=True)
             else:
@@ -180,9 +229,9 @@ def propagation_to_KML(location, propagation,
 
             kml_file.write("</Polygon>")
             kml_file.write("</Placemark>")
-
-        kml_file.write("</Document>")
-        kml_file.write("</kml>")
+        #
+        # kml_file.write("</Document>")
+        # kml_file.write("</kml>")
 
         # a = kml_shape_create(51.9392601099981, 29.5558191927263, azimuth=120, diameter=0.0002, pie_chunks=4, span=60)
         # print(str(a).replace("]], [[", "\n").replace("], [", ",").replace("[[[", "").replace("]]]", ""))
