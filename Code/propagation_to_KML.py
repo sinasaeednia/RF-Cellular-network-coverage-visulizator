@@ -1,5 +1,6 @@
 # function propagation
-# added inline plot in descriprion for both propagation and cummulative propagation
+# multiplication by 100 and devision by max resulted in error because of 100.000000000001 percent caused by precision error.
+# the order was changed to devision by max and multiplication by 100 to remove precision error 
 def propagation_to_KML(location, propagation,
                        destination_path=None,
                        lat=53.408426,
@@ -85,13 +86,13 @@ def propagation_to_KML(location, propagation,
         X = [0, 30, 45, 70, 80, 90, 100]
         Y = [0xc0c0c0, 0xb0000, 0xFF0000, 0xffaa00, 0xffff3a, 0x3ada79, 0x006e3c]
         my_interp = interp1d(X, Y, kind='zero')
-        Y2 = my_interp(round(percent))
+        Y2 = my_interp(percent)
         print(str(percent) + "\t" + hex(int(alpha)).replace("0x", "").zfill(2) + str(
             hex(int(my_interp(percent).item(0)))).replace("0x", "").zfill(6))
-        if usecase=="KML":
+        if usecase == "KML":
             return hex(int(alpha)).replace("0x", "").zfill(2) + (str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-2:]+str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-4:-2]+str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-6:-4]).zfill(6)
         else:
-            return str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)
+            return str(hex(int(Y2.item(0)))).replace("0x", "").zfill(6)
 
     def kml_shape_create(lat, long, azimuth=0, diameter=distance_map[len(propagation) - 1], pie_chunks=5, span=120,
                          reverse=False):
@@ -130,8 +131,17 @@ def propagation_to_KML(location, propagation,
 
 
         kml_file.write(
-            "<Style id=\"normalPlacemark\"><IconStyle><color>ffbe6400</color><scale>0.5</scale><Icon><href>http://kml-icons.actix.com/Dot.png</href></Icon></IconStyle></Style>")
-        kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name><description>")
+            "<Style id=\"normalPlacemark\">
+    <IconStyle>
+        <color>ffbe6400</color>
+        <scale>0.5</scale>
+        <Icon>
+            <href>http://kml-icons.actix.com/Dot.png</href>
+        </Icon>
+    </IconStyle>
+</Style>")
+        kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name>
+    <description>")
 
         # creates plot in base64 PNG format
         plt.ioff()
@@ -143,16 +153,35 @@ def propagation_to_KML(location, propagation,
         plt.savefig(pic_IObytes, format='PNG')
         pic_IObytes.seek(0)
         pic_hash = "data:image/png;base64,"+base64.b64encode(pic_IObytes.read()).decode("utf-8")
-        kml_file.write(f"<img width=\"100%\" src=\"{pic_hash}\" /><br/>")
+        kml_file.write(f"<img width=\"100%\"
+             src=\"{pic_hash}\"/>
+        <br/>")
 
         # creates description
         kml_file.write(
-            "<table border=\"1\"><tr><td>Distance</td><td>propagation</td><td>percent of prop</td><td>cumsum</td></tr>")
+            "<table border=\"1\">
+            <tr>
+                <td>Distance</td>
+                <td>propagation</td>
+                <td>percent of prop</td>
+                <td>cumsum</td>
+            </tr>")
         for d,i, j,c in zip(distance_map_standard,propagation, propagation_percent,propagation_percent_cumsum):
             if acceptable_max_min_percentage and (j*100 < acceptable_max_min_percentage[0]):
-                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td><td>{round(c,2)}%</td></tr>")
-            else:
-                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td><td>{round(c,2)}%</td></tr>")
+              kml_file.write(f"<tr><td>{d}km<
+              td><td>{i}<
+              td><td>{round(j,2)}%<
+              td><td>{round(c,2)}%<
+              td><
+              tr>")
+              else:
+              kml_file.write(f"<tr
+              bgcolor=\"#{color(j/propagation_percent_max*100,usecase='HTML')[-6:]}\">
+                <td>{d}km</td>
+                <td>{i}</td>
+                <td>{round(j,2)}%</td>
+                <td>{round(c,2)}%</td>
+            </tr>")
         kml_file.write("</table>")
         kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
         kml_file.write("<Point>")
@@ -168,18 +197,37 @@ def propagation_to_KML(location, propagation,
         for TTL in range(0, len(propagation) - 1):
             # filter output shapes based on acceptable_max_min_percentage & acceptable_max_min_absolute
             if acceptable_max_min_percentage != None:
-                if (propagation_percent[TTL]  < acceptable_max_min_percentage[0]) or\
-                        (propagation_percent[TTL]  > acceptable_max_min_percentage[1]): continue
-            if acceptable_max_min_absolute != None:
-                if (propagation_percent[TTL]  < acceptable_max_min_absolute[0]) or\
-                        (propagation_percent[TTL]  > acceptable_max_min_absolute[1]): continue
-
-            # starts creating shapes
-            kml_file.write("<Placemark>")
-            kml_file.write("<Style> ")
-            kml_file.write("\t<LineStyle>")
-            kml_file.write(
-                f"\t\t<color> {color(propagation_percent[TTL]/propagation_percent_max*100, alpha=0,usecase='KML')} </color>")
+                if (propagation_percent[TTL]  < acceptable_max_min_percentage[0])
+          or\
+          (propagation_percent[TTL]>
+          acceptable_max_min_percentage[1]):
+          continue
+          if
+          acceptable_max_min_absolute
+          !=None:
+          if
+          (propagation_percent[TTL]
+        <
+          acceptable_max_min_absolute[0])
+          or\
+          (propagation_percent[TTL]>
+          acceptable_max_min_absolute[1]):
+          continue
+          #
+          starts
+          creating
+          shapes
+          kml_file.write("<Placemark>")
+          kml_file.write("<Style>")
+          kml_file.write("
+          \t<LineStyle>")
+          kml_file.write(
+          f"\t\t<color>
+          {color(propagation_percent[TTL]
+          propagation_percent_max*100,
+          alpha=0,usecase='KML'
+          )}
+    </color>")
             # print("\t\t<width>", 4, "</width>")
             kml_file.write("\t</LineStyle>")
             kml_file.write(
