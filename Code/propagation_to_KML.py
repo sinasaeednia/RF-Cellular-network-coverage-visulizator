@@ -31,6 +31,7 @@ def propagation_to_KML(location, propagation,
     distance_map_standard = [0.4, 0.7, 1.1, 1.5, 1.8, 2.2, 2.5, 2.9, 3.3, 3.6, 4.4, 5.1, 5.8, 6.5, 7.3, 8.0, 8.7, 9.4, 10.2,
                     10.9, 12.0, 13.1, 14.1, 15.2, 16.3, 17.4, 18.5, 19.6, 20.7, 21.8, 23.2, 24.7, 26.1, 27.6, 29.0,
                     30.5, 31.9, 33.4, 34.8, 36.3]
+
     # Compensating 36.3 KM that was shown as 33.682
     distance_map = [i * 1.154 for i in distance_map_standard]
 
@@ -45,6 +46,7 @@ def propagation_to_KML(location, propagation,
     else:
         destination = location
 
+    # linear estimation to obtain spans
     if b_interpolate and (interpolation_factor > 1):
         xnew = np.linspace(0, distance_map[-1] * 1000, num=len(distance_map) * interpolation_factor, endpoint=True)
         my_interp = interp1d(np.linspace(0, distance_map[-1] * 1000, num=len(distance_map), endpoint=True), propagation,
@@ -82,7 +84,7 @@ def propagation_to_KML(location, propagation,
 
     def color(percent, alpha=alpha,usecase="KML"):
         # Color_Legend is based on RGB (for web and applications)
-        # but for google earth uses aBGR they use propagation list percentage
+        # but for Google Earth uses aBGR they use propagation list percentage
         X = [0, 30, 45, 70, 80, 90, 100]
         Y = [0xc0c0c0, 0xb0000, 0xFF0000, 0xffaa00, 0xffff3a, 0x3ada79, 0x006e3c]
         my_interp = interp1d(X, Y, kind='zero')
@@ -97,8 +99,6 @@ def propagation_to_KML(location, propagation,
     def kml_shape_create(lat, long, azimuth=0, diameter=distance_map[len(propagation) - 1], pie_chunks=5, span=120,
                          reverse=False):
         polygon_inner = []
-        # polygon_outer = []
-        # polygon_inner.append([[lat], [long]])
 
         if not reverse:
             for i in range(0, pie_chunks + 1):
@@ -140,6 +140,7 @@ def propagation_to_KML(location, propagation,
         </Icon>
     </IconStyle>
 </Style>")
+
         kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name>
     <description>")
 
@@ -279,9 +280,3 @@ def propagation_to_KML(location, propagation,
 
             kml_file.write("</Polygon>")
             kml_file.write("</Placemark>")
-        #
-        # kml_file.write("</Document>")
-        # kml_file.write("</kml>")
-
-        # a = kml_shape_create(51.9392601099981, 29.5558191927263, azimuth=120, diameter=0.0002, pie_chunks=4, span=60)
-        # print(str(a).replace("]], [[", "\n").replace("], [", ",").replace("[[[", "").replace("]]]", ""))

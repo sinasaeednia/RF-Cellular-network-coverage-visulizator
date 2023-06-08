@@ -7,7 +7,7 @@ import sqlite3
 import re
 import datetime
 
-filename = 'R6 & R9 FDD 2021-June-13 MVO ver.kmz'
+filename = 'Something.kmz'
 
 # Open the KMZ (google earth's standard zip files with all accompanying files
 kmz = ZipFile(filename, 'r')
@@ -27,7 +27,7 @@ for a in doc.getElementsByTagName("Polygon"):
 # # writes the modified xml into new file
 # with open('E:/Optimization/R6 & R9 FDD 2021-June-13 MVO ver/files/transmittersUMTS2.kml','w') as xml_file:
 #     doc.writexml(xml_file)
-with sqlite3.connect('E:/Optimization/R6 & R9 FDD 2021-June-13 MVO ver/files/UMTStransmitter.sq3') as con:
+with sqlite3.connect('E:/Optimization/something/files/UMTStransmitter.sq3') as con:
     for placemark in doc.getElementsByTagName("Placemark"):
         UMTStransmitter_nodename = placemark.getElementsByTagName("name")[0].childNodes[0].nodeValue
         UMTStransmitter_description = placemark.getElementsByTagName("description")[0].childNodes[0].nodeValue.replace(
