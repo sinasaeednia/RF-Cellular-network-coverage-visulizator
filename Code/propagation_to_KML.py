@@ -1,5 +1,5 @@
 # function propagation
-# colors was scaled based on propagation/sum(propagation) instead of propagation/max(propagation)
+# minor changes
 def propagation_to_KML(location, propagation,
                        destination_path=None,
                        lat=53.408426,
@@ -131,9 +131,9 @@ def propagation_to_KML(location, propagation,
         # creates description
         for d,i, j in zip(distance_map_standard,propagation, propagation_percent):
             if acceptable_max_min_percentage and (j*100 < acceptable_max_min_percentage[0]):
-                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{j * 100}%</td></tr>")
+                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td></tr>")
             else:
-                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
+                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td></tr>")
         kml_file.write("</table>")
         kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
         kml_file.write("<Point>")
