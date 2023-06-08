@@ -1,6 +1,5 @@
 # function propagation
-# adapted to sotware version 19 export template
-
+# colors was scaled based on propagation/sum(propagation) instead of propagation/max(propagation)
 def propagation_to_KML(location, propagation,
                        destination_path=None,
                        lat=53.408426,
@@ -53,10 +52,11 @@ def propagation_to_KML(location, propagation,
                              kind='cubic')
         distance_map = my_interp(xnew)
 
-    propagation_max = max(propagation)
+    propagation_total = sum(propagation)
     a = np.array(propagation)
-    b = (a / propagation_max * 100)
+    b = (a / propagation_total * 100)
     propagation_percent = b.tolist()
+    propagation_percent_max = max(propagation_percent)
     propagation_percent = [(i > 0) * i for i in propagation_percent]
 
     def calculateCoord(origin, brng, arc_length):
@@ -116,8 +116,6 @@ def propagation_to_KML(location, propagation,
         # polygon_inner.append([[lat], [long]])
         return polygon_inner
 
-    propagation_in_percent = [round(i / max(propagation), 2) for i in propagation]
-
     if destination_path:
         destination = (destination_path + "\\" + location).replace("\\\\", "\\")
     else:
@@ -131,11 +129,11 @@ def propagation_to_KML(location, propagation,
         kml_file.write("<table border=\"1\"><tr><td>Distance</td><td>propagation</td><td>percent of prop</td></tr>")
 
         # creates description
-        for d,i, j in zip(distance_map_standard,propagation, propagation_in_percent):
+        for d,i, j in zip(distance_map_standard,propagation, propagation_percent):
             if acceptable_max_min_percentage and (j*100 < acceptable_max_min_percentage[0]):
                 kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{j * 100}%</td></tr>")
             else:
-                kml_file.write(f"<tr bgcolor=\"#{color(j*100,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
+                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
         kml_file.write("</table>")
         kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
         kml_file.write("<Point>")
@@ -162,11 +160,11 @@ def propagation_to_KML(location, propagation,
             kml_file.write("<Style> ")
             kml_file.write("\t<LineStyle>")
             kml_file.write(
-                f"\t\t<color> {color(propagation_percent[TTL], alpha=0,usecase='KML')} </color>")
+                f"\t\t<color> {color(propagation_percent[TTL]/propagation_percent_max*100, alpha=0,usecase='KML')} </color>")
             # print("\t\t<width>", 4, "</width>")
             kml_file.write("\t</LineStyle>")
             kml_file.write(
-                f"\t<PolyStyle>\n\t\t<color> {color(propagation_percent[TTL], alpha=alpha,usecase='KML')} </color>")
+                f"\t<PolyStyle>\n\t\t<color> {color(propagation_percent[TTL]/propagation_percent_max*100, alpha=alpha,usecase='KML')} </color>")
             kml_file.write(f"\t\t<fill> {1} </fill>\n\t</PolyStyle>")
             kml_file.write("</Style>")
 
