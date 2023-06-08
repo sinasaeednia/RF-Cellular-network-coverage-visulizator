@@ -1,4 +1,5 @@
 # function propagation
+# adapted to sotware version 19 export template
 
 def propagation_to_KML(location, propagation,
                        destination_path=None,
@@ -76,7 +77,7 @@ def propagation_to_KML(location, propagation,
 
     def color(percent, alpha=alpha,usecase="KML"):
         # Color_Legend is based on RGB (for web and applications)
-        # but for google earth they use propagation list percentage
+        # but for google earth uses aBGR they use propagation list percentage
         X = [0, 30, 45, 70, 80, 90, 100]
         Y = [0xc0c0c0, 0xb0000, 0xFF0000, 0xffaa00, 0xffff3a, 0x3ada79, 0x006e3c]
         my_interp = interp1d(X, Y, kind='zero')
