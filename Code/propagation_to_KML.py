@@ -1,5 +1,5 @@
 # function propagation
-# minor changes
+# added inline plot in descriprion for both propagation and cummulative propagation
 def propagation_to_KML(location, propagation,
                        destination_path=None,
                        lat=53.408426,
@@ -16,9 +16,12 @@ def propagation_to_KML(location, propagation,
                               chunk_name_part=None
                        ):
     import numpy as np
+    import io
+    import base64
     import os
     import math
     from scipy.interpolate import interp1d
+    from matplotlib import pyplot as plt
 
     # check boundaries of accepted values to be shown in output KML shapes
     if (not acceptable_max_min_percentage) and (not acceptable_max_min_absolute):
@@ -57,7 +60,8 @@ def propagation_to_KML(location, propagation,
     b = (a / propagation_total * 100)
     propagation_percent = b.tolist()
     propagation_percent_max = max(propagation_percent)
-    propagation_percent = [(i > 0) * i for i in propagation_percent]
+    propagation_percent_cumsum=np.cumsum(propagation_percent)
+
 
     def calculateCoord(origin, brng, arc_length):
         # convert degree to radian
@@ -123,17 +127,32 @@ def propagation_to_KML(location, propagation,
 
     # Adding points for each chape
     with open(destination, 'a') as kml_file:
+
+
         kml_file.write(
             "<Style id=\"normalPlacemark\"><IconStyle><color>ffbe6400</color><scale>0.5</scale><Icon><href>http://kml-icons.actix.com/Dot.png</href></Icon></IconStyle></Style>")
         kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name><description>")
-        kml_file.write("<table border=\"1\"><tr><td>Distance</td><td>propagation</td><td>percent of prop</td></tr>")
+
+        # creates plot in base64 PNG format
+        plt.ioff()
+        plt.plot([i/10 for i in distance_map_standard], list(np.array(propagation) / max(propagation) * 100), color='r')
+        plt.plot([i/10 for i in distance_map_standard], np.cumsum([i / sum(propagation) * 100 for i in propagation]), color='g')
+        plt.ylim([0, 110])
+        plt.xlim([0, max([i/10 for i in distance_map_standard])])
+        pic_IObytes = io.BytesIO()
+        plt.savefig(pic_IObytes, format='PNG')
+        pic_IObytes.seek(0)
+        pic_hash = "data:image/png;base64,"+base64.b64encode(pic_IObytes.read()).decode("utf-8")
+        kml_file.write(f"<img width=\"100%\" src=\"{pic_hash}\" /><br/>")
 
         # creates description
-        for d,i, j in zip(distance_map_standard,propagation, propagation_percent):
+        kml_file.write(
+            "<table border=\"1\"><tr><td>Distance</td><td>propagation</td><td>percent of prop</td><td>cumsum</td></tr>")
+        for d,i, j,c in zip(distance_map_standard,propagation, propagation_percent,propagation_percent_cumsum):
             if acceptable_max_min_percentage and (j*100 < acceptable_max_min_percentage[0]):
-                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td></tr>")
+                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td><td>{round(c,2)}%</td></tr>")
             else:
-                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td></tr>")
+                kml_file.write(f"<tr bgcolor=\"#{color(j*100/propagation_percent_max,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{round(j,2)}%</td><td>{round(c,2)}%</td></tr>")
         kml_file.write("</table>")
         kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
         kml_file.write("<Point>")
