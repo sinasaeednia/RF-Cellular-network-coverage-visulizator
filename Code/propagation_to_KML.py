@@ -1,6 +1,6 @@
 # function propagation
 
-def propagation_to_KML_chunks(location, propagation,
+def propagation_to_KML(location, propagation,
                        destination_path=None,
                        lat=53.408426,
                        long=29.472164,
@@ -74,37 +74,19 @@ def propagation_to_KML_chunks(location, propagation,
 
         return [lat2 * 180 / math.pi, lon2 * 180 / math.pi]
 
-    def color(percent, alpha=alpha):
-        # Color_Legend based on propagation list percentage
+    def color(percent, alpha=alpha,usecase="KML"):
+        # Color_Legend is based on RGB (for web and applications)
+        # but for google earth they use propagation list percentage
         X = [0, 30, 45, 70, 80, 90, 100]
         Y = [0xc0c0c0, 0xb0000, 0xFF0000, 0xffaa00, 0xffff3a, 0x3ada79, 0x006e3c]
         my_interp = interp1d(X, Y, kind='zero')
         Y2 = my_interp(round(percent))
         print(str(percent) + "\t" + hex(int(alpha)).replace("0x", "").zfill(2) + str(
             hex(int(my_interp(percent).item(0)))).replace("0x", "").zfill(6))
-        return hex(int(alpha)).replace("0x", "").zfill(2) + str(hex(int(my_interp(percent).item(0)))).replace("0x",
-                                                                                                              "").zfill(
-            6)
-
-        # red = 255
-        # green = 255
-        # blue = 255
-        # red2 = 0
-        # green2 = 0
-        # blue2 = 0
-        # if percent < 50:
-        #     percent *= 2
-        #     red2 = (100 - percent) / 100 * red
-        #     green2 = percent / 100 * green
-        # else:
-        #     percent = (percent - 50) * 2
-        #     green2 = (100 - percent) / 100 * green
-        #     blue2 = percent / 100 * blue
-        #
-        # # https: // developers.google.com / kml / documentation / kmlreference # colorstyle
-        # return hex(int(alpha)).replace("0x", "").zfill(2) + hex(int(blue2)).replace("0x", "").zfill(2) + hex(
-        #     int(green2)).replace("0x", "").zfill(2) + hex(
-        #     int(red2)).replace("0x", "").zfill(2)
+        if usecase=="KML":
+            return hex(int(alpha)).replace("0x", "").zfill(2) + (str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-2:]+str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-4:-2]+str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)[-6:-4]).zfill(6)
+        else:
+            return str(hex(int(Y2.item(0)))).replace("0x","").zfill(6)
 
     def kml_shape_create(lat, long, azimuth=0, diameter=distance_map[len(propagation) - 1], pie_chunks=5, span=120,
                          reverse=False):
@@ -142,7 +124,6 @@ def propagation_to_KML_chunks(location, propagation,
 
     # Adding points for each chape
     with open(destination, 'a') as kml_file:
-
         kml_file.write(
             "<Style id=\"normalPlacemark\"><IconStyle><color>ffbe6400</color><scale>0.5</scale><Icon><href>http://kml-icons.actix.com/Dot.png</href></Icon></IconStyle></Style>")
         kml_file.write(f"<Placemark>\n<name>{chunk_name_part}</name><description>")
@@ -150,7 +131,10 @@ def propagation_to_KML_chunks(location, propagation,
 
         # creates description
         for d,i, j in zip(distance_map_standard,propagation, propagation_in_percent):
-            kml_file.write(f"<tr bgcolor=\"#{color(j*100)[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
+            if acceptable_max_min_percentage and (j*100 < acceptable_max_min_percentage[0]):
+                kml_file.write(f"<tr><td>{d}km</td><td>{i}</td><td>{j * 100}%</td></tr>")
+            else:
+                kml_file.write(f"<tr bgcolor=\"#{color(j*100,usecase='HTML')[-6:]}\"><td>{d}km</td><td>{i}</td><td>{j*100}%</td></tr>")
         kml_file.write("</table>")
         kml_file.write("</description>\n<styleUrl>normalPlacemark</styleUrl>")
         kml_file.write("<Point>")
@@ -177,11 +161,11 @@ def propagation_to_KML_chunks(location, propagation,
             kml_file.write("<Style> ")
             kml_file.write("\t<LineStyle>")
             kml_file.write(
-                f"\t\t<color> {color(abs(propagation_percent[TTL] * 100 / max(propagation_percent)), alpha=alpha)} </color>")
+                f"\t\t<color> {color(propagation_percent[TTL], alpha=0,usecase='KML')} </color>")
             # print("\t\t<width>", 4, "</width>")
             kml_file.write("\t</LineStyle>")
             kml_file.write(
-                f"\t<PolyStyle>\n\t\t<color> {color(abs(propagation_percent[TTL] * 100 / max(propagation_percent)))} </color>")
+                f"\t<PolyStyle>\n\t\t<color> {color(propagation_percent[TTL], alpha=alpha,usecase='KML')} </color>")
             kml_file.write(f"\t\t<fill> {1} </fill>\n\t</PolyStyle>")
             kml_file.write("</Style>")
 
